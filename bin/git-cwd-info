@@ -25,8 +25,8 @@ if [[ $GIT_REPO_PATH != '' && $GIT_REPO_PATH != '~' && $GIT_REPO_PATH != "$HOME/
 
   GIT_DIRTY=""
   if [[ "$GIT_REPO_PATH" != '.' && `git ls-files -m` != "" ]]; then
-    GIT_DIRTY=" %B%F{90}✗%f%b"
+    GIT_DIRTY=" %B%F{160}✗%f%b"
   fi
 
-  echo "on %F{90}$GIT_BRANCH%f at %F{37}$GIT_COMMIT_ID%f$GIT_MODE$GIT_DIRTY "
+  echo "on %B%F{244}$GIT_BRANCH%f%b at %F{37}$GIT_COMMIT_ID%f$GIT_MODE$GIT_DIRTY "
 fi
