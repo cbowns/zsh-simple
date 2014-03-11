@@ -131,16 +131,19 @@ if [[ $GIT_REPO_PATH != '' && $GIT_REPO_PATH != '~' && $GIT_REPO_PATH != "$HOME/
   # Bold it.
   GIT_MODE="%B$GIT_MODE%b"
 
+  # repo's mode.
+  # old:
   # Get the repo's dirty/clean mode.
   # GIT_DIRTY=""
   # if [[ "$GIT_REPO_PATH" != '.' && `git ls-files -m` != "" ]]; then
   #   GIT_DIRTY=" %B%F{160}✗%f%b"
   # fi
-
+  #####
   # Newer:
   # Use oh-my-zsh:
-  GIT_DIRTY=" %B%F{160}$(git_prompt_status)%f%b"
-  # If not empty, format "on <branchname>"
+  GIT_DIRTY=" %B%F{160}$(git_prompt_status)%f%b "
+
+  # If not empty, format branch for "on <branchname>"
   if [ ! -z $GIT_BRANCH ]; then
     GIT_BRANCH="on %B%F{244}$GIT_BRANCH%f%b "
   fi
@@ -149,7 +152,7 @@ if [[ $GIT_REPO_PATH != '' && $GIT_REPO_PATH != '~' && $GIT_REPO_PATH != "$HOME/
   GIT_REMOTE="$(git_remote_status)"
   # If not empty, format surrounding string.
   if [ ! -z $GIT_REMOTE ]; then
-    GIT_REMOTE=" ($GIT_REMOTE)"
+    GIT_REMOTE=" %F{242}($GIT_REMOTE)%f"
   fi
 
   echo "${GIT_BRANCH}at %B%F{233}$GIT_COMMIT_ID%f%b$GIT_REMOTE$GIT_MODE$GIT_DIRTY "
