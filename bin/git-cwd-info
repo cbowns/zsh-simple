@@ -129,10 +129,15 @@ if [[ $GIT_REPO_PATH != '' && $GIT_REPO_PATH != '~' && $GIT_REPO_PATH != "$HOME/
   # Bold it.
   GIT_MODE="%B$GIT_MODE%b"
 
-  GIT_DIRTY=""
-  if [[ "$GIT_REPO_PATH" != '.' && `git ls-files -m` != "" ]]; then
-    GIT_DIRTY=" %B%F{160}✗%f%b"
-  fi
+  # Get the repo's dirty/clean mode.
+  # GIT_DIRTY=""
+  # if [[ "$GIT_REPO_PATH" != '.' && `git ls-files -m` != "" ]]; then
+  #   GIT_DIRTY=" %B%F{160}✗%f%b"
+  # fi
+
+  # Newer:
+  # Use oh-my-zsh:
+  GIT_DIRTY=" %B%F{160}$(git_prompt_status)%f%b"
 
   # If no branch, elide "on <>"
   if [ ! -z $GIT_BRANCH ]; then
