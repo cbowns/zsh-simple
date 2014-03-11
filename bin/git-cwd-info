@@ -20,28 +20,29 @@ ZSH_THEME_GIT_PROMPT_UNMERGED="M"
 ZSH_THEME_GIT_PROMPT_UNTRACKED="?"
 
 # Ahead/behind
-ZSH_THEME_GIT_PROMPT_AHEAD="A"
-ZSH_THEME_GIT_PROMPT_BEHIND="B"
-ZSH_THEME_GIT_PROMPT_DIVERGED="D"
+ZSH_THEME_GIT_PROMPT_AHEAD_REMOTE="ahead "
+ZSH_THEME_GIT_PROMPT_BEHIND_REMOTE="behind "
+ZSH_THEME_GIT_PROMPT_DIVERGED_REMOTE="diverged "
+
 
 # Pulled from oh-my-zsh:
 
 # get the difference between the local and remote branches
-git_remote_status() {
+function git_remote_status() {
     remote=${$(command git rev-parse --verify ${hook_com[branch]}@{upstream} --symbolic-full-name 2>/dev/null)/refs\/remotes\/}
     if [[ -n ${remote} ]] ; then
-        ahead=$(command git rev-list ${hook_com[branch]}@{upstream}..HEAD 2>/dev/null | wc -l)
-        behind=$(command git rev-list HEAD..${hook_com[branch]}@{upstream} 2>/dev/null | wc -l)
+        ahead=$(command git rev-list ${hook_com[branch]}@{upstream}..HEAD 2>/dev/null | wc -l | sed -e 's/^ *//' -e 's/ *$//')
+        behind=$(command git rev-list HEAD..${hook_com[branch]}@{upstream} 2>/dev/null | wc -l | sed -e 's/^ *//' -e 's/ *$//')
 
         if [ $ahead -eq 0 ] && [ $behind -gt 0 ]
         then
-            echo "$ZSH_THEME_GIT_PROMPT_BEHIND_REMOTE"
+            echo "$ZSH_THEME_GIT_PROMPT_BEHIND_REMOTE$behind"
         elif [ $ahead -gt 0 ] && [ $behind -eq 0 ]
         then
-            echo "$ZSH_THEME_GIT_PROMPT_AHEAD_REMOTE"
+            echo "$ZSH_THEME_GIT_PROMPT_AHEAD_REMOTE$ahead"
         elif [ $ahead -gt 0 ] && [ $behind -gt 0 ]
         then
-            echo "$ZSH_THEME_GIT_PROMPT_DIVERGED_REMOTE"
+            echo "$ZSH_THEME_GIT_PROMPT_DIVERGED_REMOTE$ahead/$behind"
         fi
     fi
 }
@@ -98,15 +99,16 @@ git_prompt_status() {
   if $(echo "$INDEX" | grep '^UU ' &> /dev/null); then
     STATUS="$ZSH_THEME_GIT_PROMPT_UNMERGED$STATUS"
   fi
-  if $(echo "$INDEX" | grep '^## .*ahead' &> /dev/null); then
-    STATUS="$ZSH_THEME_GIT_PROMPT_AHEAD$STATUS"
-  fi
-  if $(echo "$INDEX" | grep '^## .*behind' &> /dev/null); then
-    STATUS="$ZSH_THEME_GIT_PROMPT_BEHIND$STATUS"
-  fi
-  if $(echo "$INDEX" | grep '^## .*diverged' &> /dev/null); then
-    STATUS="$ZSH_THEME_GIT_PROMPT_DIVERGED$STATUS"
-  fi
+  # Elided in favor of longer stuff up top.
+  # if $(echo "$INDEX" | grep '^## .*ahead' &> /dev/null); then
+  #   STATUS="$ZSH_THEME_GIT_PROMPT_AHEAD$STATUS"
+  # fi
+  # if $(echo "$INDEX" | grep '^## .*behind' &> /dev/null); then
+  #   STATUS="$ZSH_THEME_GIT_PROMPT_BEHIND$STATUS"
+  # fi
+  # if $(echo "$INDEX" | grep '^## .*diverged' &> /dev/null); then
+  #   STATUS="$ZSH_THEME_GIT_PROMPT_DIVERGED$STATUS"
+  # fi
   echo $STATUS
 }
 
@@ -138,11 +140,18 @@ if [[ $GIT_REPO_PATH != '' && $GIT_REPO_PATH != '~' && $GIT_REPO_PATH != "$HOME/
   # Newer:
   # Use oh-my-zsh:
   GIT_DIRTY=" %B%F{160}$(git_prompt_status)%f%b"
-
-  # If no branch, elide "on <>"
+  # If not empty, format "on <branchname>"
   if [ ! -z $GIT_BRANCH ]; then
     GIT_BRANCH="on %B%F{244}$GIT_BRANCH%f%b "
   fi
-  echo "${GIT_BRANCH}at %B%F{233}$GIT_COMMIT_ID%f%b$GIT_MODE$GIT_DIRTY "
+
+  # Get remote status.
+  GIT_REMOTE="$(git_remote_status)"
+  # If not empty, format surrounding string.
+  if [ ! -z $GIT_REMOTE ]; then
+    GIT_REMOTE=" ($GIT_REMOTE)"
+  fi
+
+  echo "${GIT_BRANCH}at %B%F{233}$GIT_COMMIT_ID%f%b$GIT_REMOTE$GIT_MODE$GIT_DIRTY "
 fi
 
