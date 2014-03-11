@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 # Emits Git metadata for use in a Zsh prompt.
 #
@@ -7,6 +7,48 @@
 #
 # Rewritten as shell script simply for speed
 
+
+# Pulled from oh-my-zsh:
+
+# get the difference between the local and remote branches
+git_remote_status() {
+    remote=${$(command git rev-parse --verify ${hook_com[branch]}@{upstream} --symbolic-full-name 2>/dev/null)/refs\/remotes\/}
+    if [[ -n ${remote} ]] ; then
+        ahead=$(command git rev-list ${hook_com[branch]}@{upstream}..HEAD 2>/dev/null | wc -l)
+        behind=$(command git rev-list HEAD..${hook_com[branch]}@{upstream} 2>/dev/null | wc -l)
+
+        if [ $ahead -eq 0 ] && [ $behind -gt 0 ]
+        then
+            echo "$ZSH_THEME_GIT_PROMPT_BEHIND_REMOTE"
+        elif [ $ahead -gt 0 ] && [ $behind -eq 0 ]
+        then
+            echo "$ZSH_THEME_GIT_PROMPT_AHEAD_REMOTE"
+        elif [ $ahead -gt 0 ] && [ $behind -gt 0 ]
+        then
+            echo "$ZSH_THEME_GIT_PROMPT_DIVERGED_REMOTE"
+        fi
+    fi
+}
+
+# Checks if there are commits ahead from remote
+function git_prompt_ahead() {
+  if $(echo "$(command git log origin/$(current_branch)..HEAD 2> /dev/null)" | grep '^commit' &> /dev/null); then
+    echo "$ZSH_THEME_GIT_PROMPT_AHEAD"
+  fi
+}
+
+# Formats prompt string for current git commit short SHA
+function git_prompt_short_sha() {
+  SHA=$(command git rev-parse --short HEAD 2> /dev/null) && echo "$ZSH_THEME_GIT_PROMPT_SHA_BEFORE$SHA$ZSH_THEME_GIT_PROMPT_SHA_AFTER"
+}
+
+# Formats prompt string for current git commit long SHA
+function git_prompt_long_sha() {
+  SHA=$(command git rev-parse HEAD 2> /dev/null) && echo "$ZSH_THEME_GIT_PROMPT_SHA_BEFORE$SHA$ZSH_THEME_GIT_PROMPT_SHA_AFTER"
+}
+
+
+
 GIT_REPO_PATH=`git rev-parse --git-dir 2>/dev/null`
 
 if [[ $GIT_REPO_PATH != '' && $GIT_REPO_PATH != '~' && $GIT_REPO_PATH != "$HOME/.git" ]]; then
@@ -14,6 +56,7 @@ if [[ $GIT_REPO_PATH != '' && $GIT_REPO_PATH != '~' && $GIT_REPO_PATH != "$HOME/
   GIT_BRANCH=`git symbolic-ref -q HEAD | sed 's/refs\/heads\///'`
   GIT_COMMIT_ID=`git rev-parse --short HEAD 2>/dev/null`
 
+  # Figure out the repo's state.
   GIT_MODE=""
   if [[ -e "$GIT_REPO_PATH/BISECT_LOG" ]]; then
     GIT_MODE=" +bisect"
@@ -22,11 +65,18 @@ if [[ $GIT_REPO_PATH != '' && $GIT_REPO_PATH != '~' && $GIT_REPO_PATH != "$HOME/
   elif [[ -e "$GIT_REPO_PATH/rebase" || -e "$GIT_REPO_PATH/rebase-apply" || -e "$GIT_REPO_PATH/rebase-merge" || -e "$GIT_REPO_PATH/../.dotest" ]]; then
     GIT_MODE=" +rebase"
   fi
+  # Bold it.
+  GIT_MODE="%B$GIT_MODE%b"
 
   GIT_DIRTY=""
   if [[ "$GIT_REPO_PATH" != '.' && `git ls-files -m` != "" ]]; then
     GIT_DIRTY=" %B%F{160}✗%f%b"
   fi
 
-  echo "on %B%F{244}$GIT_BRANCH%f%b at %F{37}$GIT_COMMIT_ID%f$GIT_MODE$GIT_DIRTY "
+  # If no branch, elide "on <>"
+  if [ ! -z $GIT_BRANCH ]; then
+    GIT_BRANCH="on %B%F{244}$GIT_BRANCH%f%b "
+  fi
+  echo "${GIT_BRANCH}at %B%F{233}$GIT_COMMIT_ID%f%b$GIT_MODE$GIT_DIRTY "
 fi
+
