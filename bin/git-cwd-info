@@ -141,7 +141,11 @@ if [[ $GIT_REPO_PATH != '' && $GIT_REPO_PATH != '~' && $GIT_REPO_PATH != "$HOME/
   #####
   # Newer:
   # Use oh-my-zsh:
-  GIT_DIRTY=" %B%F{160}$(git_prompt_status)%f%b "
+  GIT_DIRTY="$(git_prompt_status)"
+  # If not empty, format status
+  if [ ! -z $GIT_DIRTY ]; then
+    GIT_DIRTY=" %B%F{160}$GIT_DIRTY%f%b"
+  fi
 
   # If not empty, format branch for "on <branchname>"
   if [ ! -z $GIT_BRANCH ]; then
@@ -155,6 +159,6 @@ if [[ $GIT_REPO_PATH != '' && $GIT_REPO_PATH != '~' && $GIT_REPO_PATH != "$HOME/
     GIT_REMOTE=" %F{242}($GIT_REMOTE)%f"
   fi
 
-  echo "${GIT_BRANCH}at %B%F{233}$GIT_COMMIT_ID%f%b$GIT_REMOTE$GIT_MODE$GIT_DIRTY"
+  echo "${GIT_BRANCH}at %B%F{233}$GIT_COMMIT_ID%f%b$GIT_REMOTE$GIT_MODE$GIT_DIRTY "
 fi
 
